@@ -10,7 +10,7 @@ public class ShopWindow extends JFrame {
     private static final Object[][] FISH_CATALOG = {
             {"Klaun", 100, 25, "Vesela oranzova rybka"},
             {"Kapr", 60, 35, "Robustni sladkovodni ryba"},
-            {"Neon", 40, 15, "Mala zarива modra rybka"},
+            {"Neon", 40, 15, "Mala zarive modra rybka"},
             {"Zlata rybka", 80, 20, "Klasicka zlata rybka"},
             {"Zralok", 200, 50, "Velky a impozantni zralok"},
     };
@@ -53,11 +53,11 @@ public class ShopWindow extends JFrame {
         panel.add(Box.createVerticalStrut(8));
 
         for (Object[] fish : FISH_CATALOG) {
-            String name = (String) fish[0];
+            String species = (String) fish[0];
             int price = (int) fish[1];
             int size = (int) fish[2];
             String desc = (String) fish[3];
-            panel.add(makeFishRow(name, price, size, desc));
+            panel.add(makeFishRow(species, price, size, desc));
             panel.add(Box.createVerticalStrut(8));
         }
 
@@ -127,9 +127,43 @@ public class ShopWindow extends JFrame {
         buyBtn.setForeground(Color.WHITE);
         buyBtn.setFocusPainted(false);
         buyBtn.setPreferredSize(new Dimension(85, 40));
+        buyBtn.addActionListener(e -> buyFish(species, price, size));
         row.add(buyBtn, BorderLayout.EAST);
 
         return row;
+    }
+    private void buyFish(String species, int price, int size) {
+        if (!aquarium.spendCoins(price)) {
+            JOptionPane.showMessageDialog(this, "Mas malo coinu.");
+            return;
+        }
+
+        String name = JOptionPane.showInputDialog(this, "Jmeno pro rybu:", species + aquarium.getFishList().size());
+        if (name == null || name.isBlank()) {
+            name = species + aquarium.getFishList().size();
+        }
+
+        Fish fish = new Fish(name.trim(), species, size);
+        fish.increaseHunger(25);
+        aquarium.addFish(fish);
+
+        refreshLabels();
+        JOptionPane.showMessageDialog(this, "Koupil jsi rybu: " + name);
+    }
+
+    private void buyFood(int price, int portions, JLabel foodStockLabel) {
+        if (!aquarium.spendCoins(price)) {
+            JOptionPane.showMessageDialog(this, "Mas malo coinu.");
+            return;
+        }
+
+        aquarium.addFood(portions);
+        refreshLabels();
+        foodStockLabel.setText("Zasoby krmeni: " + aquarium.getFood() + " porci");
+    }
+
+    private void refreshLabels() {
+        coinsLabel.setText("Coiny: " + aquarium.getCoins());
     }
 
     private JPanel makeFoodRow(String name, int price, int portions, String desc, JLabel foodStockLabel) {

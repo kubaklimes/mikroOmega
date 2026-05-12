@@ -11,10 +11,11 @@ public class AquariumWindow extends JFrame {
     private JLabel coinsLabel;
     private JLabel foodLabel;
     private JLabel statusLabel;
+    private Aquariumpanel aquariumPanel;
 
 
     public AquariumWindow(Aquarium aquarium, JFrame previousWindow) {
-        this.aquarium       = aquarium;
+        this.aquarium = aquarium;
         this.previousWindow = previousWindow;
 
         setTitle("Akvarium");
@@ -24,7 +25,7 @@ public class AquariumWindow extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        Aquariumpanel aquariumPanel = new Aquariumpanel();
+        aquariumPanel = new Aquariumpanel(aquarium);
         add(aquariumPanel, BorderLayout.CENTER);
 
         add(buildRightPanel(), BorderLayout.EAST);
@@ -35,7 +36,7 @@ public class AquariumWindow extends JFrame {
 
     private JPanel buildRightPanel() {
         JPanel outer = new JPanel(new BorderLayout());
-        outer.setPreferredSize(new Dimension(200, 0));
+        outer.setPreferredSize(new Dimension(230, 0));
         outer.setBackground(new Color(10, 50, 90));
 
         JLabel title = new JLabel("Moje ryby", SwingConstants.CENTER);
@@ -72,11 +73,47 @@ public class AquariumWindow extends JFrame {
             fishListContent.add(empty);
         } else {
             for (Fish f : fish) {
+                fishListContent.add(makeFishCard(f));
                 fishListContent.add(Box.createVerticalStrut(6));
             }
         }
-
+        fishListContent.revalidate();
+        fishListContent.repaint();
+        aquariumPanel.repaint();
     }
+
+    private JPanel makeFishCard(Fish fish) {
+        JPanel row = new JPanel(new BorderLayout(6, 4));
+        row.setBackground(new Color(20, 70, 120));
+        row.setMaximumSize(new Dimension(220, 74));
+        row.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+
+        JLabel name = new JLabel(fish.getName() + " (" + fish.getSpecies() + ")");
+        name.setForeground(Color.WHITE);
+        name.setFont(new Font("Arial", Font.BOLD, 12));
+
+        int hunger = fish.getHunger();
+        JLabel hungerLabel = new JLabel("Hlad: " + hunger + "%");
+        hungerLabel.setFont(new Font("Arial", Font.PLAIN, 11));
+        hungerLabel.setForeground(hunger >= 80 ? new Color(255, 140, 140) : new Color(200, 230, 255));
+
+        JPanel left = new JPanel(new GridLayout(2, 1));
+        left.setOpaque(false);
+        left.add(name);
+        left.add(hungerLabel);
+
+        JButton feedBtn = new JButton("Nakrm");
+        feedBtn.setFont(new Font("Arial", Font.BOLD, 11));
+        feedBtn.setBackground(new Color(70, 160, 90));
+        feedBtn.setForeground(Color.WHITE);
+        feedBtn.setFocusPainted(false);
+        feedBtn.addActionListener(e -> feedFish(fish));
+
+        row.add(left, BorderLayout.CENTER);
+        row.add(feedBtn, BorderLayout.EAST);
+        return row;
+    }
+
 
 
     private JPanel buildBottomBar() {
@@ -135,8 +172,6 @@ public class AquariumWindow extends JFrame {
     private void setStatus(String msg) {
         statusLabel.setText(msg);
     }
-
-
 
     private void goBack() {
         dispose();
