@@ -32,6 +32,14 @@ public class AquariumWindow extends JFrame {
         add(buildBottomBar(), BorderLayout.SOUTH);
 
         setVisible(true);
+        Timer hungerTimer = new Timer(1000, e -> {
+            for (Fish fish : aquarium.getFishList()) {
+                fish.update();
+            }
+            refreshFishList();
+        });
+
+        hungerTimer.start();
     }
 
     private JPanel buildRightPanel() {

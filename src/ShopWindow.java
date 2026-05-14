@@ -144,7 +144,6 @@ public class ShopWindow extends JFrame {
         }
 
         Fish fish = new Fish(name.trim(), species, size);
-        fish.increaseHunger(25);
         aquarium.addFish(fish);
 
         refreshLabels();
@@ -192,6 +191,7 @@ public class ShopWindow extends JFrame {
         buyBtn.setForeground(Color.WHITE);
         buyBtn.setFocusPainted(false);
         buyBtn.setPreferredSize(new Dimension(85, 40));
+        buyBtn.addActionListener(e -> buyFood(price, portions,nameLabel));
         row.add(buyBtn, BorderLayout.EAST);
 
         return row;

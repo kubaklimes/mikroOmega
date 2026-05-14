@@ -28,7 +28,8 @@ public class Aquarium {
         return false;
     }
 
-    public boolean canAfford(int amount) { return coins >= amount; }
+    public boolean canAfford(int amount) {
+        return coins >= amount; }
 
     public int  getFood()           { return food; }
     public void addFood(int amount) { food += amount; }
