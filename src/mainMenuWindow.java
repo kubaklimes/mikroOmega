@@ -7,6 +7,7 @@ public class mainMenuWindow extends JFrame {
     private JLabel coinsLabel;
     private JLabel fishCountLabel;
 
+    // Builds the main menu and connects buttons to windows.
     public mainMenuWindow(Aquarium aquarium) {
         this.aquarium = aquarium;
 
@@ -80,6 +81,7 @@ public class mainMenuWindow extends JFrame {
         setVisible(true);
     }
 
+    // Creates a styled menu button.
     private JButton createButton(String text) {
         JButton btn = new JButton(text);
         btn.setFont(new Font("Arial", Font.PLAIN, 17));
@@ -91,16 +93,19 @@ public class mainMenuWindow extends JFrame {
         return btn;
     }
 
+    // Refreshes menu statistics after returning from another window.
     public void refreshCoins() {
         coinsLabel.setText("Coiny: " + aquarium.getCoins());
         fishCountLabel.setText("Ryby: " + aquarium.getFishList().size());
     }
 
+    // Opens the aquarium window.
     private void openAquarium() {
         setVisible(false);
         new AquariumWindow(aquarium, this);
     }
 
+    // Opens the shop window.
     private void openShop() {
         setVisible(false);
         new ShopWindow(aquarium, this);

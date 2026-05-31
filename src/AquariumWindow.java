@@ -12,8 +12,12 @@ public class AquariumWindow extends JFrame {
     private JLabel foodLabel;
     private JLabel statusLabel;
     private Aquariumpanel aquariumPanel;
+    private Timer gameTimer;
+    private Timer animationTimer;
+    private int coinTickCounter;
 
 
+    // Builds the main aquarium screen and starts game timers.
     public AquariumWindow(Aquarium aquarium, JFrame previousWindow) {
         this.aquarium = aquarium;
         this.previousWindow = previousWindow;
@@ -32,11 +36,14 @@ public class AquariumWindow extends JFrame {
         add(buildBottomBar(), BorderLayout.SOUTH);
 
         setVisible(true);
-        Timer gameTimer = new Timer(1000, e -> {
+        gameTimer = new Timer(1000, e -> {
+            coinTickCounter++;
             int earnedCoins = 0;
             for (Fish fish : aquarium.getFishList()) {
                 fish.update();
-                earnedCoins += fish.getCoinValuePerTick();
+                if (coinTickCounter % 3 == 0) {
+                    earnedCoins += fish.getCoinValuePerTick();
+                }
             }
 
             if (earnedCoins > 0) {
@@ -47,10 +54,16 @@ public class AquariumWindow extends JFrame {
             refreshFishList();
         });
         gameTimer.start();
-        Timer animationTimer = new Timer(70, e -> aquariumPanel.repaint());
+        animationTimer = new Timer(70, e -> {
+            for (Fish fish : aquarium.getFishList()) {
+                fish.swimWithin(aquariumPanel.getWidth(), aquariumPanel.getHeight());
+            }
+            aquariumPanel.repaint();
+        });
         animationTimer.start();
     }
 
+    // Creates the right panel with the current fish list.
     private JPanel buildRightPanel() {
         JPanel outer = new JPanel(new BorderLayout());
         outer.setPreferredSize(new Dimension(250, 0));
@@ -76,6 +89,7 @@ public class AquariumWindow extends JFrame {
         return outer;
     }
 
+    // Refreshes fish cards after game changes.
     public void refreshFishList() {
         fishListContent.removeAll();
         List<Fish> fish = aquarium.getFishList();
@@ -98,6 +112,7 @@ public class AquariumWindow extends JFrame {
         fishListContent.repaint();
     }
 
+    // Creates one fish info card with a feed button.
     private JPanel makeFishCard(Fish fish) {
         JPanel row = new JPanel(new BorderLayout(6, 4));
         row.setBackground(new Color(20, 70, 120));
@@ -113,7 +128,7 @@ public class AquariumWindow extends JFrame {
         hungerLabel.setFont(new Font("Arial", Font.PLAIN, 11));
         hungerLabel.setForeground(hunger >= 80 ? new Color(255, 140, 140) : new Color(200, 230, 255));
 
-        JLabel sizeLabel = new JLabel("Velikost: " + fish.getSize() + " | +" + fish.getCoinValuePerTick() + " coiny/s");
+        JLabel sizeLabel = new JLabel("Velikost: " + fish.getSize() + " | +" + fish.getCoinValuePerTick() + " coiny/3s");
         sizeLabel.setFont(new Font("Arial", Font.PLAIN, 11));
         sizeLabel.setForeground(new Color(255, 220, 120));
 
@@ -123,11 +138,12 @@ public class AquariumWindow extends JFrame {
         left.add(hungerLabel);
         left.add(sizeLabel);
 
-        JButton feedBtn = new JButton("Nakrm");
+        JButton feedBtn = new JButton(hunger == 0 ? "Plna" : "Nakrm");
         feedBtn.setFont(new Font("Arial", Font.BOLD, 11));
-        feedBtn.setBackground(new Color(70, 160, 90));
+        feedBtn.setBackground(hunger == 0 ? new Color(80, 90, 105) : new Color(70, 160, 90));
         feedBtn.setForeground(Color.WHITE);
         feedBtn.setFocusPainted(false);
+        feedBtn.setEnabled(hunger > 0);
         feedBtn.addActionListener(e -> feedFish(fish));
 
         row.add(left, BorderLayout.CENTER);
@@ -137,6 +153,7 @@ public class AquariumWindow extends JFrame {
 
 
 
+    // Creates the bottom status bar.
     private JPanel buildBottomBar() {
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 6));
         bar.setBackground(new Color(5, 30, 65));
@@ -169,7 +186,12 @@ public class AquariumWindow extends JFrame {
         return bar;
     }
 
+    // Feeds one hungry fish and updates the UI.
     private void feedFish(Fish fish) {
+        if (fish.getHunger() == 0) {
+            setStatus(fish.getName() + " nema hlad.");
+            return;
+        }
         if (aquarium.getFood() == 0) {
             setStatus("Nemas krmeni! Kup ho v obchode.");
             return;
@@ -182,16 +204,21 @@ public class AquariumWindow extends JFrame {
         setStatus(fish.getName() + " byl nakrmen a povyrostl.");
     }
 
+    // Updates visible coin and food values.
     private void updateStats() {
         coinsLabel.setText("Coiny: " + aquarium.getCoins());
         foodLabel.setText("  Krmeni: " + aquarium.getFood() + " porci");
     }
 
+    // Shows a short status message to the player.
     private void setStatus(String msg) {
         statusLabel.setText(msg);
     }
 
+    // Stops timers and returns to the previous window.
     private void goBack() {
+        if (gameTimer != null) gameTimer.stop();
+        if (animationTimer != null) animationTimer.stop();
         dispose();
         previousWindow.setVisible(true);
         if (previousWindow instanceof mainMenuWindow) {

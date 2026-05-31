@@ -5,11 +5,13 @@ import java.util.List;
 public class Aquariumpanel extends JPanel {
     private Aquarium aquarium;
 
+    // Connects the drawing panel to the shared aquarium data.
     public Aquariumpanel(Aquarium aquarium) {
         this.aquarium = aquarium;
         setBackground(new Color(10, 80, 160));
     }
 
+    // Draws the aquarium background and all fish.
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -21,10 +23,12 @@ public class Aquariumpanel extends JPanel {
         g2.setPaint(gradient);
         g2.fillRect(0, 0, getWidth(), getHeight());
 
+        int panelWidth = Math.max(1, getWidth());
+        int panelHeight = Math.max(1, getHeight());
         g2.setColor(new Color(255, 255, 255, 20));
         for (int i = 0; i < 8; i++) {
-            int bx = (i * 97 + 30) % getWidth();
-            int by = (i * 71 + 50) % getHeight();
+            int bx = (i * 97 + 30) % panelWidth;
+            int by = (i * 71 + 50) % panelHeight;
             int br = 8 + (i % 3) * 6;
             g2.fillOval(bx, by, br, br);
         }
@@ -36,38 +40,42 @@ public class Aquariumpanel extends JPanel {
         }
     }
 
+    // Draws one fish at its current position.
+    // Zdroje : https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html#sin-double-
     private void drawSimpleFish(Graphics2D g2, Fish fish, int index) {
         long t = System.currentTimeMillis();
 
-        int availableW = Math.max(220, getWidth() - 120);
-        int baseX = 40 + (index * 120) % availableW;
-        int swimOffset = (int) (Math.sin((t / 380.0) + index) * 20);
-        int x = baseX + swimOffset;
+        int x = fish.getX();
+        int y = fish.getY();
+        int bodyW = fish.getBodyWidth();
+        int bodyH = fish.getBodyHeight();
+        int tailSwing = (int) (Math.sin((t / 180.0) + index) * 6);
+        boolean facingRight = fish.isFacingRight();
 
-        int y = 80 + ((index * 75) % Math.max(120, getHeight() - 200));
-        y += (int) (Math.cos((t / 520.0) + index) * 6);
-
-        int bodyW = Math.max(40, fish.getSize());
-        int bodyH = Math.max(20, fish.getSize() / 2);
-
-        Color bodyColor = fish.isCriticallyHungry() ? new Color(220, 120, 120) : new Color(250, 180, 70);
+        Color bodyColor = fish.isCriticallyHungry() ? new Color(220, 120, 120) : fish.getBodyColor();
         g2.setColor(bodyColor);
         g2.fillOval(x, y, bodyW, bodyH);
 
-        int tailSwing = (int) (Math.sin((t / 180.0) + index) * 6);
         Polygon tail = new Polygon();
-        tail.addPoint(x, y + bodyH / 2);
-        tail.addPoint(x - 16, y + 4 + tailSwing);
-        tail.addPoint(x - 16, y + bodyH - 4 + tailSwing);
+        if (facingRight) {
+            tail.addPoint(x, y + bodyH / 2);
+            tail.addPoint(x - 16, y + 4 + tailSwing);
+            tail.addPoint(x - 16, y + bodyH - 4 + tailSwing);
+        } else {
+            tail.addPoint(x + bodyW, y + bodyH / 2);
+            tail.addPoint(x + bodyW + 16, y + 4 + tailSwing);
+            tail.addPoint(x + bodyW + 16, y + bodyH - 4 + tailSwing);
+        }
         g2.fillPolygon(tail);
 
-        g2.setColor(new Color(255, 220, 140, 180));
+        g2.setColor(new Color(255, 255, 255, 80));
         g2.fillOval(x + bodyW / 3, y + 3, bodyW / 3, bodyH / 3);
 
+        int eyeX = facingRight ? x + bodyW - 14 : x + 7;
         g2.setColor(Color.WHITE);
-        g2.fillOval(x + bodyW - 14, y + 5, 7, 7);
+        g2.fillOval(eyeX, y + 5, 7, 7);
         g2.setColor(Color.BLACK);
-        g2.fillOval(x + bodyW - 11, y + 8, 3, 3);
+        g2.fillOval(eyeX + 3, y + 8, 3, 3);
 
         g2.setColor(new Color(230, 240, 255));
         g2.setFont(new Font("Arial", Font.PLAIN, 11));

@@ -8,11 +8,11 @@ public class ShopWindow extends JFrame {
     private JLabel coinsLabel;
 
     private static final Object[][] FISH_CATALOG = {
-            {"Klaun", 100, 25, "Vesela oranzova rybka"},
-            {"Kapr", 60, 35, "Robustni sladkovodni ryba"},
-            {"Neon", 40, 15, "Mala zarive modra rybka"},
-            {"Zlata rybka", 80, 20, "Klasicka zlata rybka"},
-            {"Zralok", 200, 50, "Velky a impozantni zralok"},
+            {"Klaun", 100, "Vesela oranzova rybka"},
+            {"Kapr", 60, "Robustni sladkovodni ryba"},
+            {"Neon", 40, "Mala zarive modra rybka"},
+            {"Zlata rybka", 80, "Klasicka zlata rybka"},
+            {"Zralok", 200, "Velky a impozantni zralok"},
     };
 
     private static final Object[][] FOOD_CATALOG = {
@@ -20,6 +20,7 @@ public class ShopWindow extends JFrame {
             {"Velke krmeni", 75, 15, "15 porci krmeni"},
     };
 
+    // Builds the shop window for buying fish and food.
     public ShopWindow(Aquarium aquarium, JFrame previousWindow) {
         this.aquarium = aquarium;
         this.previousWindow = previousWindow;
@@ -55,8 +56,8 @@ public class ShopWindow extends JFrame {
         for (Object[] fish : FISH_CATALOG) {
             String species = (String) fish[0];
             int price = (int) fish[1];
-            int size = (int) fish[2];
-            String desc = (String) fish[3];
+            String desc = (String) fish[2];
+            int size = getStartingSizeForSpecies(species);
             panel.add(makeFishRow(species, price, size, desc));
             panel.add(Box.createVerticalStrut(8));
         }
@@ -101,6 +102,19 @@ public class ShopWindow extends JFrame {
         setVisible(true);
     }
 
+    // Returns the first size for each fish species.
+    private int getStartingSizeForSpecies(String species) {
+        switch (species) {
+            case "Zralok": return 85;
+            case "Kapr": return 45;
+            case "Klaun": return 30;
+            case "Zlata rybka": return 22;
+            case "Neon": return 16;
+            default: return 25;
+        }
+    }
+
+    // Creates one shop row for a fish type.
     private JPanel makeFishRow(String species, int price, int size, String desc) {
         JPanel row = new JPanel(new BorderLayout(10, 0));
         row.setBackground(new Color(25, 70, 130));
@@ -132,6 +146,7 @@ public class ShopWindow extends JFrame {
 
         return row;
     }
+    // Buys a fish when the player has enough coins.
     private void buyFish(String species, int price, int size) {
         if (!aquarium.spendCoins(price)) {
             JOptionPane.showMessageDialog(this, "Mas malo coinu.");
@@ -150,6 +165,7 @@ public class ShopWindow extends JFrame {
         JOptionPane.showMessageDialog(this, "Koupil jsi rybu: " + name);
     }
 
+    // Buys food and updates the visible stock label.
     private void buyFood(int price, int portions, JLabel foodStockLabel) {
         if (!aquarium.spendCoins(price)) {
             JOptionPane.showMessageDialog(this, "Mas malo coinu.");
@@ -161,10 +177,12 @@ public class ShopWindow extends JFrame {
         foodStockLabel.setText("Zasoby krmeni: " + aquarium.getFood() + " porci");
     }
 
+    // Refreshes shop labels after a purchase.
     private void refreshLabels() {
         coinsLabel.setText("Coiny: " + aquarium.getCoins());
     }
 
+    // Creates one shop row for food.
     private JPanel makeFoodRow(String name, int price, int portions, String desc, JLabel foodStockLabel) {
         JPanel row = new JPanel(new BorderLayout(10, 0));
         row.setBackground(new Color(25, 80, 60));
@@ -191,12 +209,13 @@ public class ShopWindow extends JFrame {
         buyBtn.setForeground(Color.WHITE);
         buyBtn.setFocusPainted(false);
         buyBtn.setPreferredSize(new Dimension(85, 40));
-        buyBtn.addActionListener(e -> buyFood(price, portions,nameLabel));
+        buyBtn.addActionListener(e -> buyFood(price, portions, foodStockLabel));
         row.add(buyBtn, BorderLayout.EAST);
 
         return row;
     }
 
+    // Creates a section title label.
     private JLabel makeSectionLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("Arial", Font.BOLD, 16));
@@ -204,6 +223,7 @@ public class ShopWindow extends JFrame {
         lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
         return lbl;
     }
+    // Returns to the previous window.
     private void goBack() {
         dispose();
         previousWindow.setVisible(true);
